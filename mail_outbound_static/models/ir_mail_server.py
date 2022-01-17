@@ -14,8 +14,9 @@ class IrMailServer(models.Model):
     )
 
     @api.model
-    def send_email(self, message, mail_server_id=None, smtp_server=None,
-                   *args, **kwargs):
+    def send_email(
+        self, message, mail_server_id=None, smtp_server=None, *args, **kwargs
+    ):
 
         # Replicate logic from core to get mail server
         mail_server = None
@@ -28,14 +29,27 @@ class IrMailServer(models.Model):
             split_from = message['From'].rsplit(' <', 1)
             if len(split_from) > 1:
                 email_from = '%s <%s>' % (
-                    split_from[0], mail_server.smtp_from,
+                    split_from[0],
+                    mail_server.smtp_from,
                 )
             else:
                 email_from = mail_server.smtp_from
+                if "Message-id" in message:
+                    mail_message = self.env['mail.mail'].search(
+                        [
+                            ('message_id', '=', message['Message-id']),
+                            ('author_id', '!=', False),
+                        ],
+                        limit=1
+                    )
+                    if len(mail_message):
+                        email_from = '"%s" <%s>' % (
+                            mail_message.author_id.name, mail_server.smtp_from
+                        )
 
             message.replace_header('From', email_from)
-            bounce_alias = self.env['ir.config_parameter'].sudo().get_param(
-                "mail.bounce.alias")
+            bounce_alias = self.env['ir.config_parameter'].sudo(
+            ).get_param("mail.bounce.alias")
             if not bounce_alias:
                 # then, bounce handling is disabled and we want
                 # Return-Path = From
