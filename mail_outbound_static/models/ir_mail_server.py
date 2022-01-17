@@ -25,7 +25,11 @@ class IrMailServer(models.Model):
         elif not smtp_server:
             mail_server = self.sudo().search([], order='sequence', limit=1)
 
-        if mail_server and mail_server.smtp_from:
+        catchall_domain = self.env['ir.config_parameter'].sudo(
+        ).get_param("mail.catchall.domain")
+        is_internal_message = ("@" + catchall_domain) in message['From']
+
+        if mail_server and mail_server.smtp_from and not is_internal_message:
             split_from = message['From'].rsplit(' <', 1)
             if len(split_from) > 1:
                 email_from = '%s <%s>' % (
