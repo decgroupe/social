@@ -84,3 +84,8 @@ class MailActivity(models.Model):
         res = super().action_create_calendar_event()
         res['context']['default_team_id'] = self.team_id.id or False
         return res
+
+    @api.multi
+    def _check_access_assignation(self):
+        res = super(MailActivity, self.filtered('user_id'))._check_access_assignation()
+        return res
