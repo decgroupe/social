@@ -43,10 +43,14 @@
                  <field name="team_id"/>
              </field>
              <xpath expr="//div[hasclass('oe_kanban_content')]" position="inside">
-                 <br/>
-                 <div>
-                     Team: <field name="team_id"/>
-                 </div>
+                <t t-if="record.team_id.value">
+                    <small>
+                        <br/>
+                        <div>
+                            Team: <field name="team_id"/>
+                        </div>
+                    </small>
+                </t>
              </xpath>
          </field>
     </record>
