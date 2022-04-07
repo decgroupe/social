@@ -1,6 +1,11 @@
 # Copyright 2018 ForgeFlow S.L.
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+
+import logging
+
 from odoo import api, fields, models
+
+_logger = logging.getLogger(__name__)
 
 
 class MailActivity(models.Model):
@@ -26,6 +31,14 @@ class MailActivity(models.Model):
         for activity in self:
             res_model = activity.res_model
             res_id = activity.res_id
+            if not res_model or not res_id:
+                _logger.error(
+                    "Activity %d is missing a model/id " "(res_model=%s, res_id=%d)",
+                    activity.id,
+                    res_model,
+                    res_id,
+                )
+                continue
             activity.partner_id = False
             if res_model:
                 if res_model == "res.partner":
