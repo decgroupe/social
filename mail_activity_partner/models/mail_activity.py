@@ -1,6 +1,10 @@
 # Copyright 2018 Eficent Business and IT Consulting Services, S.L.
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
+
+import logging
 from odoo import api, models, fields
+
+_logger = logging.getLogger(__name__)
 
 
 class MailActivity(models.Model):
@@ -18,13 +22,20 @@ class MailActivity(models.Model):
         string='Commercial Entity',
         store=True,
         related_sudo=True,
-        readonly=True)
+        readonly=True
+    )
 
     @api.depends('res_model', 'res_id')
     def _compute_res_partner_id(self):
         for obj in self:
             res_model = obj.res_model
             res_id = obj.res_id
+            if not res_model or not res_id:
+                _logger.error(
+                    "Activity %d is missing a model/id "
+                    "(res_model=%s, res_id=%d)", obj.id, res_model, res_id
+                )
+                continue
             if res_model == 'res.partner':
                 obj.partner_id = res_id
             else:
