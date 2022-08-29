@@ -31,6 +31,7 @@ class MailActivity(models.Model):
         for activity in self:
             res_model = activity.res_model
             res_id = activity.res_id
+            activity.partner_id = False
             if not res_model or not res_id:
                 _logger.error(
                     "Activity %d is missing a model/id " "(res_model=%s, res_id=%d)",
@@ -39,13 +40,18 @@ class MailActivity(models.Model):
                     res_id,
                 )
                 continue
-            activity.partner_id = False
-            if res_model:
-                if res_model == "res.partner":
-                    activity.partner_id = res_id
+            if res_model == "res.partner":
+                activity.partner_id = res_id
+            else:
+                res_model_id = activity.env[res_model].search([("id", "=", res_id)])
+                # Check for existing function as this case could happen when
+                # compute is called from a hook (post_install)
+                if hasattr(self, "_get_partner_field_name"):
+                    partner_field_name = res_model_id._get_partner_field_name()
                 else:
-                    res_model_id = self.env[res_model].browse(res_id)
-                    if "partner_id" in res_model_id._fields and res_model_id.partner_id:
-                        activity.partner_id = res_model_id.partner_id
-                    else:
-                        activity.partner_id = False
+                    partner_field_name = "partner_id"
+                if partner_field_name in res_model_id._fields:
+                    partner_id = res_model_id[partner_field_name]
+                    activity.partner_id = partner_id
+                else:
+                    activity.partner_id = None
