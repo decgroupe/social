@@ -40,8 +40,14 @@ class MailActivity(models.Model):
                 obj.partner_id = res_id
             else:
                 res_model_id = obj.env[res_model].search([('id', '=', res_id)])
-                if 'partner_id' in res_model_id._fields and \
-                        res_model_id.partner_id:
-                    obj.partner_id = res_model_id.partner_id
+                # Check for existing function as this case could happen when
+                # compute is called from a hook (post_install)
+                if hasattr(self, "_get_partner_field_name"):
+                    partner_field_name = res_model_id._get_partner_field_name()
                 else:
-                    obj.partner_id = None
+                    partner_field_name = "partner_id"
+                if partner_field_name in res_model_id._fields:
+                    partner_id = res_model_id[partner_field_name]
+                    obj.partner_id = partner_id
+                else:
+                    obj.project_id = None
