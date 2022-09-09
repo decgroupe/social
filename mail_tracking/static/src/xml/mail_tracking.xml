@@ -53,8 +53,9 @@
 </t>
 
 <t t-extend="mail.widget.Thread.Message">
-    <t t-jquery="p.o_mail_info" t-operation="after">
+    <t t-jquery="div.o_thread_message_content" t-operation="after">
         <t t-if="message.hasPartnerTrackings() || message.hasEmailCc()" >
+            <div class="o_mail_tracking_container">
             <p class="o_mail_tracking">
                 <strong>To:</strong>
                 <t t-foreach="message.getPartnerTrackings()" t-as="tracking">
@@ -80,6 +81,7 @@
                     </span>
                 </t>
             </p>
+        </div>
         </t>
     </t>
 </t>
