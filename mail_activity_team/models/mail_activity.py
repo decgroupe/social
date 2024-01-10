@@ -63,7 +63,10 @@ class MailActivity(models.Model):
             and a.user_id
             and a.user_id not in a.team_id.with_context(active_test=True).member_ids
         ):
-            raise ValidationError(_("The assigned user is not member of the team."))
+            raise ValidationError(
+                _("The assigned user %s is not member of the team %s.")
+                % (_activity.user_id.name, _activity.team_id.name)
+            )
 
     @api.onchange("activity_type_id")
     def _onchange_activity_type_id(self):
