@@ -46,7 +46,9 @@ class CalendarEvent(models.Model):
     def read(self, fields=None, load="_classic_read"):
         # This function manages which fields a user can read based on the
         # team it belongs.
-        fields, extra_fields, public_fields = self._get_read_fields(fields)
+        # Warning: Do not edit fields arguments or it will break Google Calendar Sync
+        # ./google_calendar/models/calendar_recurrence_rule.py::RecurrenceRule._write_from_google()
+        fields, extra_fields, public_fields = self._get_read_fields(fields.copy())
         result = super().read(fields, load)
         for r in result:
             # Apply filtering based on event privacy settings like it is
