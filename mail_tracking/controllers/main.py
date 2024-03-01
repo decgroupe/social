@@ -31,11 +31,21 @@ def db_env(dbname):
 
 
 class MailTrackingController(MailController):
+    def _get_ip_address(self, httprequest):
+        ip_addr = (
+            httprequest.environ.get("HTTP_X_FORWARDED_FOR") if httprequest else False
+        )
+        if ip_addr:
+            ip_addr = ip_addr.split(",")[0]
+        else:
+            ip_addr = httprequest.remote_addr if httprequest else False
+        return ip_addr
+
     def _request_metadata(self):
         """Prepare remote info metadata"""
         request = http.request.httprequest
         return {
-            "ip": request.remote_addr or False,
+            "ip": self._get_ip_address(request) or False,
             "user_agent": request.user_agent or False,
             "os_family": request.user_agent.platform or False,
             "ua_family": request.user_agent.browser or False,
