@@ -27,7 +27,7 @@ class MailActivity(models.Model):
     def _compute_related_model_instance(self):
         for record in self:
             ref = False
-            if record.res_id:
+            if record.res_model and record.res_id:
                 ref = "{},{}".format(record.res_model, record.res_id)
             record.related_model_instance = ref
 
