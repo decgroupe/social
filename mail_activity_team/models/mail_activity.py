@@ -27,6 +27,19 @@ class MailActivity(models.Model):
         comodel_name="mail.activity.team", default=lambda s: s._get_default_team_id()
     )
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            # ensure that the built-in user_id field value is in sync with our field
+            # team_user_id before triggering create
+            if (
+                "user_id" in vals
+                and "team_user_id" in vals
+                and vals["user_id"] != vals["team_user_id"]
+            ):
+                vals["user_id"] = vals["team_user_id"]
+        return super(MailActivity, self).create(vals_list)
+
     @api.onchange("user_id")
     def _onchange_user_id(self):
         if not self.user_id or (
