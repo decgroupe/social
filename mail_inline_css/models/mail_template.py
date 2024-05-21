@@ -3,13 +3,23 @@
 
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
+import logging
+
+try:
+    import cssutils
+
+    cssutils.log.setLevel(logging.CRITICAL)
+
+except (ImportError, IOError) as err:  # pragma: no cover
+    _logger = logging.getLogger(__name__)
+    _logger.debug(err)
+
 from odoo import models
 
 try:
     from premailer import Premailer
-except (ImportError, IOError) as err:  # pragma: no cover
-    import logging
 
+except (ImportError, IOError) as err:  # pragma: no cover
     _logger = logging.getLogger(__name__)
     _logger.debug(err)
 
