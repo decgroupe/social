@@ -30,6 +30,11 @@ class MailActivity(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
+            # user_id is always enforced by odoo's `activity_schedule` if missing or
+            # False that means that we need to pop it out as user and team could be
+            # incompatible
+            if self.env.context.get("reset_user"):
+                vals["user_id"] = False
             # ensure that the built-in user_id field value is in sync with our field
             # team_user_id before triggering create
             if (

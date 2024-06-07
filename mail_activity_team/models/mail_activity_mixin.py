@@ -59,7 +59,10 @@ class MailActivityMixin(models.AbstractModel):
                         ._get_default_team_id(user_id=user_id)
                     )
                     act_values.update({"team_id": team.id})
-        return super().activity_schedule(
+        return super(
+            MailActivityMixin,
+            self.with_context(reset_user=act_values.get("user_id") is False),
+        ).activity_schedule(
             act_type_xmlid=act_type_xmlid,
             date_deadline=date_deadline,
             summary=summary,
