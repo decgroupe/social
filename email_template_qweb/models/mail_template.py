@@ -1,6 +1,34 @@
 # Copyright 2016 Therp BV <http://therp.nl>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
-from odoo import fields, models, tools
+
+import functools
+
+import dateutil.relativedelta as relativedelta
+from werkzeug import urls
+
+from odoo import fields, models
+from odoo.tools import safe_eval
+
+# functions dict define by Odoo 17.0 in odoo/tools/rendering_tools.py and quite
+# similar to Odoo 14.0 jinja environnement initialization `jinja_template_env` from
+# odoo/addons/mail/models/mail_render_mixin.py
+template_env_globals = {
+    "str": str,
+    "quote": urls.url_quote,
+    "urlencode": urls.url_encode,
+    "datetime": safe_eval.datetime,
+    "len": len,
+    "abs": abs,
+    "min": min,
+    "max": max,
+    "sum": sum,
+    "filter": filter,
+    "reduce": functools.reduce,
+    "map": map,
+    "relativedelta": relativedelta.relativedelta,
+    "round": round,
+    "hasattr": hasattr,
+}
 
 
 class MailTemplate(models.Model):
@@ -17,6 +45,7 @@ class MailTemplate(models.Model):
 
     def _render_qweb_body_eval_context(self, record):
         render_context = self._render_qweb_eval_context()
+        render_context.update(template_env_globals)
         render_context.update(
             {
                 "object": record,
@@ -38,7 +67,7 @@ class MailTemplate(models.Model):
             templates_res_ids = {self._context.get("lang"): (self, res_ids)}
         res = {}
         rendered_templates = {}
-        for lang, (template, tpl_res_ids) in templates_res_ids.items():
+        for _lang, (template, tpl_res_ids) in templates_res_ids.items():
             for res_id in tpl_res_ids:
                 record = template.env[template.model].browse(res_id)
                 values = template._render_qweb_body_eval_context(record)
